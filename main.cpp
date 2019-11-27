@@ -283,9 +283,8 @@ int main()
 				float d = fluid->density[IX(i, j)];
 				if (d) {
 					c = sf::Color(255, d, 16, d);
-				} else {
-					c = sf::Color::Black;
-				}
+				} else { c = sf::Color::Black; }
+
 				float x = i * SCALE, y = j * SCALE;
 				grid.append(sf::Vertex(sf::Vector2f(x, y), c));
 				grid.append(sf::Vertex(sf::Vector2f(x + SCALE, y), c));
