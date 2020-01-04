@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 
 int N = 128;
-int ITER = 16;
+int ITER = 1;
 int SCALE = 4;
 
 struct Fluid {
@@ -236,12 +236,21 @@ void FluidFade(Fluid *plane, float amount)
 	}
 }
 
+auto ColorMap(float value)
+{
+	float ratio = 2 * value / 255.0f;
+	int b = 0 > 255 * (1 - ratio) ? 0 : int(255 * (1 - ratio));
+	int r = 0 > 255 * (ratio - 1) ? 0 : int(255 * (ratio - 1));
+	int g = 255 - b - r;
+
+	return sf::Color(r, g, b);
+}
+
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(N * SCALE, N * SCALE), "Fluid");
 	window.setFramerateLimit(60);
-
-	auto fluid = FluidCreate(0, 0, 0.5);
+	auto fluid = FluidCreate(0, 0, 0.2);
 	sf::VertexArray grid(sf::Quads);
 	int px = 0, py = 0;
 
@@ -254,7 +263,7 @@ int main()
 			if (event.type == sf::Event::Closed) { window.close(); }
 		}
 		grid.clear();
-		window.clear(sf::Color::Black);
+		window.clear(sf::Color::Blue);
 
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 			int brush = 3;
@@ -267,29 +276,18 @@ int main()
 			FluidAddVelocity(fluid, x, y, x - px, y - py);
 		}
 
-//		int brush = 1;
-//		for (int i = -brush; i <= brush; i++) {
-//			for (int j = -brush; j <= brush; j++) {
-//				FluidAddDensity(fluid, N / 2 + i, N / 2 + j, 128);
-//			}
-//		}
-//		float xa = (rand()%2) ? (float(rand()) / float(RAND_MAX)) : -(float(rand()) / float(RAND_MAX));
-//		float ya = (rand()%2) ? (float(rand()) / float(RAND_MAX)) : -(float(rand()) / float(RAND_MAX));
-//		FluidAddVelocity(fluid, N / 2, N / 2, 0, -0.01);
-
 		for (int i = 0; i < N; ++i) {
 			for (int j = 0; j < N; ++j) {
-				sf::Color c;
+				float x = i * SCALE;
+				float y = j * SCALE;
 				float d = fluid->density[IX(i, j)];
-				if (d) {
-					c = sf::Color(255, d, 16, d);
-				} else { c = sf::Color::Black; }
-
-				float x = i * SCALE, y = j * SCALE;
-				grid.append(sf::Vertex(sf::Vector2f(x, y), c));
-				grid.append(sf::Vertex(sf::Vector2f(x + SCALE, y), c));
-				grid.append(sf::Vertex(sf::Vector2f(x + SCALE, y + SCALE), c));
-				grid.append(sf::Vertex(sf::Vector2f(x, y + SCALE), c));
+				sf::Color c(ColorMap(d));
+				if (d > 0) {
+					grid.append(sf::Vertex(sf::Vector2f(x, y), c));
+					grid.append(sf::Vertex(sf::Vector2f(x + SCALE, y), c));
+					grid.append(sf::Vertex(sf::Vector2f(x + SCALE, y + SCALE), c));
+					grid.append(sf::Vertex(sf::Vector2f(x, y + SCALE), c));
+				}
 			}
 		}
 		FluidStep(fluid);
