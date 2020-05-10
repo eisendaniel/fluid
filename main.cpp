@@ -86,7 +86,7 @@ static void set_bnd(int b, float *x)
 
 static void lin_solve(int b, float *x, float *x0, float a, float c)
 {
-	float cRecip = 1.0 / c;
+	float cRecip = 1.0f / c;
 	for (int k = 0; k < ITER; k++) {
 		for (int j = 1; j < N - 1; j++) {
 			for (int i = 1; i < N - 1; i++) {
